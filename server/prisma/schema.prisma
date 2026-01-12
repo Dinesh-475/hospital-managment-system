@@ -1,0 +1,432 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  STAFF
+  MANAGER
+  ADMIN
+}
+
+enum Department {
+  NURSING
+  RECEPTION
+  LAB
+  PHARMACY
+  MAINTENANCE
+  SECURITY
+}
+
+enum StaffShiftType {
+  MORNING
+  EVENING
+  NIGHT
+  ROTATING
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+}
+
+enum ShiftType {
+  MORNING
+  EVENING
+  NIGHT
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum RecordType {
+  HISTORY
+  LAB_REPORT
+  RADIOLOGY
+  DISCHARGE_SUMMARY
+  PRESCRIPTION
+}
+
+enum IssueType {
+  TECHNICAL
+  MAINTENANCE
+  HR
+  PATIENT_CARE
+  EQUIPMENT
+  OTHER
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum IssueStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REOPENED
+}
+
+// Removing Duplicate Shift Model (84-100)
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  action      String
+  resourceId  String?  @map("resource_id")
+  resourceType String? @map("resource_type")
+  details     Json?
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+enum MessageType {
+  DIRECT
+  BROADCAST
+  DEPARTMENT
+}
+
+enum AnnouncementPriority {
+  NORMAL
+  IMPORTANT
+  URGENT
+}
+
+enum LeaveType {
+  SICK
+  CASUAL
+  EARNED
+  EMERGENCY
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ContextType {
+  GENERAL
+  MEDICAL_QUERY
+  DOCUMENT_ANALYSIS
+}
+
+model User {
+  id              String   @id @default(uuid()) @db.Uuid
+  phoneNumber     String   @unique @map("phone_number")
+  email           String   @unique
+  passwordHash    String   @map("password_hash")
+  role            UserRole
+  firstName       String   @map("first_name")
+  lastName        String   @map("last_name")
+  profilePictureUrl String? @map("profile_picture_url")
+  isActive        Boolean  @default(true) @map("is_active")
+  isVerified      Boolean  @default(false) @map("is_verified")
+  tokenVersion    Int      @default(0) @map("token_version")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  lastLogin       DateTime? @map("last_login")
+  fileUrl         String?  @map("file_url")
+  extractedText   String? @map("extracted_text") @db.Text
+  summary         String?   @db.Text
+  diagnosis       String?
+  prescriptions   Json?
+  
+  // Relations
+  otpVerifications OtpVerification[]
+  doctorProfile    Doctor?
+  patientProfile   Patient?
+  staffProfile     Staff?
+  attendance       Attendance[]
+  assignedShifts   Shift[] @relation("AssignedShifts")
+  createdShifts    Shift[] @relation("CreatedShifts")
+  
+  // Issues
+  reportedIssues   Issue[] @relation("ReportedIssues")
+  assignedIssues   Issue[] @relation("AssignedIssues")
+  
+  // Messages
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  
+  // Announcements
+  createdAnnouncements Announcement[]
+  
+  // Leave Requests
+  leaveRequests    LeaveRequest[] @relation("UserLeaveRequests")
+  approvedLeaves   LeaveRequest[] @relation("LeaveApprover")
+  
+  // AI Chat
+  chatSessions     AiChatSession[]
+  auditLogs        AuditLog[]
+
+  @@map("users")
+  @@index([phoneNumber])
+  @@index([email])
+  @@index([role])
+}
+
+model OtpVerification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  otpCode   String   @map("otp_code")
+  otpExpiry DateTime @map("otp_expiry")
+  isUsed    Boolean  @default(false) @map("is_used")
+  attempts  Int      @default(0)
+
+  @@map("otp_verification")
+  @@index([userId])
+}
+
+model Doctor {
+  doctorId          String @id @map("doctor_id") @db.Uuid
+  user              User   @relation(fields: [doctorId], references: [id])
+  specialization    String
+  licenseNumber     String @unique @map("license_number")
+  roomNumber        String? @map("room_number")
+  consultationFee   Decimal @map("consultation_fee")
+  yearsOfExperience Int @map("years_of_experience")
+  description       String? @db.Text
+  availableDays     Json @map("available_days")
+  availableTimeSlots Json @map("available_time_slots")
+
+  appointments      Appointment[]
+  medicalRecords    MedicalRecord[]
+
+  @@map("doctors")
+}
+
+model Staff {
+  staffId      String @id @map("staff_id") @db.Uuid
+  user         User   @relation(fields: [staffId], references: [id])
+  department   Department
+  employeeId   String @unique @map("employee_id")
+  designation  String
+  joiningDate  DateTime @map("joining_date")
+  shiftType    StaffShiftType @map("shift_type")
+
+  @@map("staff")
+  @@index([department])
+}
+
+model Patient {
+  patientId          String @id @map("patient_id") @db.Uuid
+  user               User   @relation(fields: [patientId], references: [id])
+  patientUniqueId    String @unique @default(uuid()) @map("patient_unique_id") 
+  dateOfBirth        DateTime @map("date_of_birth")
+  bloodGroup         String? @map("blood_group")
+  emergencyContactName String? @map("emergency_contact_name")
+  emergencyContactPhone String? @map("emergency_contact_phone")
+  address            Json?
+  medicalHistory     String? @map("medical_history") @db.Text
+  allergies          Json?
+
+  appointments       Appointment[]
+  medicalRecords     MedicalRecord[]
+
+  @@map("patients")
+}
+
+model Attendance {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  user            User     @relation(fields: [userId], references: [id])
+  checkInTime     DateTime @map("check_in_time")
+  checkOutTime    DateTime? @map("check_out_time")
+  locationLat     Decimal? @map("location_lat")
+  locationLng     Decimal? @map("location_lng")
+  isWithinGeofence Boolean @default(false) @map("is_within_geofence")
+  attendanceStatus AttendanceStatus @map("attendance_status")
+  date            DateTime @db.Date
+
+  @@map("attendance")
+  @@index([date])
+  @@index([userId])
+  @@index([attendanceStatus])
+}
+
+model Shift {
+  id          String   @id @default(uuid()) @db.Uuid
+  assignedTo  String   @map("assigned_to") @db.Uuid
+  user        User     @relation("AssignedShifts", fields: [assignedTo], references: [id])
+  shiftDate   DateTime @map("shift_date") @db.Date
+  shiftType   ShiftType @map("shift_type")
+  startTime   DateTime @map("start_time") @db.Time
+  endTime     DateTime @map("end_time") @db.Time
+  createdBy   String   @map("created_by") @db.Uuid
+  manager     User     @relation("CreatedShifts", fields: [createdBy], references: [id])
+
+  @@map("shifts")
+  @@index([assignedTo])
+  @@index([createdBy])
+  @@index([shiftDate])
+}
+
+model Appointment {
+  id              String   @id @default(uuid()) @db.Uuid
+  bookingNumber   String   @unique @default(uuid()) @map("booking_number")
+  patientId       String   @map("patient_id") @db.Uuid
+  patient         Patient  @relation(fields: [patientId], references: [patientId])
+  doctorId        String   @map("doctor_id") @db.Uuid
+  doctor          Doctor   @relation(fields: [doctorId], references: [doctorId])
+  appointmentDate DateTime @map("appointment_date") @db.Date
+  appointmentTime DateTime @map("appointment_time") @db.Time
+  status          AppointmentStatus @default(SCHEDULED)
+  symptoms        String?  @db.Text
+  queuePosition   Int?     @map("queue_position")
+  createdAt       DateTime @default(now()) @map("created_at")
+  
+  medicalRecords  MedicalRecord[]
+
+  @@map("appointments")
+  @@index([appointmentDate])
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([bookingNumber])
+  @@index([status])
+}
+
+model MedicalRecord {
+  id            String   @id @default(uuid()) @db.Uuid
+  patientId     String   @map("patient_id") @db.Uuid
+  patient       Patient  @relation(fields: [patientId], references: [patientId])
+  doctorId      String?  @map("doctor_id") @db.Uuid
+  doctor        Doctor?  @relation(fields: [doctorId], references: [doctorId])
+  appointmentId String?  @map("appointment_id") @db.Uuid
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  recordType    RecordType @map("record_type")
+  recordDate    DateTime @map("record_date")
+  documentUrl   String?  @map("document_url")
+  extractedText String?  @map("extracted_text") @db.Text
+  summary       String?  @db.Text
+  diagnosis     String?  @db.Text
+  prescriptions Json?
+
+  @@map("medical_records")
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([appointmentId])
+}
+
+model Issue {
+  id          String   @id @default(uuid()) @db.Uuid
+  reportedBy  String   @map("reported_by") @db.Uuid
+  reporter    User     @relation("ReportedIssues", fields: [reportedBy], references: [id])
+  issueType   IssueType @map("issue_type")
+  title       String
+  description String   @db.Text
+  priority    IssuePriority
+  status      IssueStatus @default(OPEN)
+  assignedTo  String?  @map("assigned_to") @db.Uuid
+  assignee    User?    @relation("AssignedIssues", fields: [assignedTo], references: [id])
+  location    String?
+  attachments Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  resolvedAt  DateTime? @map("resolved_at")
+
+  @@map("issues")
+  @@index([status])
+  @@index([reportedBy])
+  @@index([assignedTo])
+}
+
+model Message {
+  id          String   @id @default(uuid()) @db.Uuid
+  senderId    String   @map("sender_id") @db.Uuid
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId  String?  @map("receiver_id") @db.Uuid
+  receiver    User?    @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  messageType MessageType @map("message_type")
+  content     String   @db.Text
+  attachments Json?
+  isRead      Boolean  @default(false) @map("is_read")
+  readAt      DateTime? @map("read_at")
+  sentAt      DateTime @default(now()) @map("sent_at")
+
+  @@map("messages")
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model Announcement {
+  id          String   @id @default(uuid()) @db.Uuid
+  createdBy   String   @map("created_by") @db.Uuid
+  creator     User     @relation(fields: [createdBy], references: [id])
+  title       String
+  content     String   @db.Text
+  targetRoles Json     @map("target_roles")
+  priority    AnnouncementPriority
+  publishedAt DateTime @default(now()) @map("published_at")
+  expiresAt   DateTime? @map("expires_at")
+
+  @@map("announcements")
+  @@index([createdBy])
+}
+
+model LeaveRequest {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  user        User     @relation("UserLeaveRequests", fields: [userId], references: [id])
+  leaveType   LeaveType @map("leave_type")
+  startDate   DateTime @map("start_date") @db.Date
+  endDate     DateTime @map("end_date") @db.Date
+  reason      String   @db.Text
+  status      LeaveStatus @default(PENDING)
+  approverId  String?  @map("approver_id") @db.Uuid
+  approver    User?    @relation("LeaveApprover", fields: [approverId], references: [id])
+  approvedAt  DateTime? @map("approved_at")
+  rejectedAt  DateTime? @map("rejected_at")
+  rejectionReason String? @map("rejection_reason") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("leave_requests")
+  @@index([status])
+  @@index([userId])
+  @@index([approverId])
+}
+
+model AiChatSession {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  user        User     @relation(fields: [userId], references: [id])
+  sessionStart DateTime @default(now()) @map("session_start")
+  sessionEnd  DateTime? @map("session_end")
+  messages    Json
+  contextType ContextType @map("context_type")
+
+  @@map("ai_chat_sessions")
+  @@index([userId])
+}
+
+model HospitalSettings {
+  id                   String   @id @default(uuid()) @db.Uuid
+  geofenceCenterLat    Decimal  @map("geofence_center_lat")
+  geofenceCenterLng    Decimal  @map("geofence_center_lng")
+  geofenceRadiusMeters Int      @map("geofence_radius_meters")
+  workingHoursStart    DateTime @map("working_hours_start") @db.Time
+  workingHoursEnd      DateTime @map("working_hours_end") @db.Time
+  maxAppointmentsPerSlot Int    @map("max_appointments_per_slot")
+  slotDurationMinutes  Int      @map("slot_duration_minutes")
+
+  @@map("hospital_settings")
+}
