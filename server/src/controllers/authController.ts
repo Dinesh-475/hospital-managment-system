@@ -209,3 +209,136 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
         next(error);
     }
 };
+
+import bcrypt from 'bcryptjs';
+
+export const register = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, password, firstName, lastName } = req.body;
+
+        if (!email || !password || !firstName || !lastName) {
+             return res.status(400).json({ success: false, message: 'All fields are required' });
+        }
+
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) {
+             return res.status(400).json({ success: false, message: 'Email already registered' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
+
+        const newUser = await prisma.user.create({
+             data: {
+                 email,
+                 passwordHash,
+                 firstName,
+                 lastName,
+                 role: UserRole.PATIENT,
+                 isVerified: false,
+                 isActive: true,
+                 phoneNumber: '' // Handle optional
+             }
+        });
+
+        const tokens = generateTokens(newUser);
+
+        res.status(201).json({
+             success: true,
+             accessToken: tokens.accessToken,
+             refreshToken: tokens.refreshToken,
+             user: {
+                 id: newUser.id,
+                 email: newUser.email,
+                 name: `${newUser.firstName} ${newUser.lastName}`,
+                 role: newUser.role
+             }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Verify OTP without login (for registration)
+export const verifyOTPOnly = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { phoneNumber, otp } = req.body;
+        
+        if (!phoneNumber || !otp) {
+            return res.status(400).json({ success: false, message: 'Phone number and OTP required' });
+        }
+
+        const storedOTP = await otpCache.getOTP(phoneNumber);
+        
+        if (!storedOTP || storedOTP !== otp) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+        }
+
+        // OTP verified - don't need to delete it yet if we want to allow "re-verification" on submit? 
+        // Actually best to delete and return a temporary "verified token" if we were strict.
+        // For now, we trust the client state flow (simple version), or we can delete it.
+        // Let's delete it to prevent replay.
+        await otpCache.deleteOTP(phoneNumber);
+
+        res.status(200).json({
+            success: true,
+            message: 'Phone number verified successfully'
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const login = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { identifier, password } = req.body; // identifier can be email or employeeId
+
+        if (!identifier || !password) {
+             return res.status(400).json({ success: false, message: 'ID/Email and password required' });
+        }
+
+        let user;
+
+        // Check if identifier is an email
+        if (identifier.includes('@')) {
+            user = await prisma.user.findUnique({ where: { email: identifier } });
+        } else {
+            // Assume it's an employeeId, look up Staff first
+            const staff = await prisma.staff.findUnique({ 
+                where: { employeeId: identifier },
+                include: { user: true }
+            });
+            if (staff) {
+                user = staff.user;
+            }
+        }
+
+        if (!user || !user.passwordHash) {
+             // Fallback: try finding user by email even if it didn't look like one? No, safer to fail.
+             // Or maybe they used phone number as ID?
+             return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+        if (!isMatch) {
+             return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        const tokens = generateTokens(user);
+
+        res.status(200).json({
+             success: true,
+             accessToken: tokens.accessToken,
+             refreshToken: tokens.refreshToken,
+             user: {
+                 id: user.id,
+                 email: user.email,
+                 name: `${user.firstName} ${user.lastName}`,
+                 role: user.role
+             }
+        });
+    } catch (error) {
+        next(error);
+    }
+};

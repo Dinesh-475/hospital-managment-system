@@ -1,9 +1,11 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from './pages/auth/Login';
+import { Register } from './pages/auth/Register';
 import { ForgotPassword } from './pages/auth/ForgotPassword';
 import DashboardLayout from './layout/DashboardLayout';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/dashboard/Dashboard';
 import { Toaster } from 'sonner';
+import { AuthProvider } from './contexts/AuthContext';
 
 import { useSelector } from 'react-redux';
 import { RootState } from './store';
@@ -22,11 +24,12 @@ function App() {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   return (
-    <>
+    <AuthProvider>
       <Toaster position="bottom-right" />
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         
         {/* Protected Routes */}
@@ -47,7 +50,7 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         )}
       </Routes>
-    </>
+    </AuthProvider>
   );
 }
 

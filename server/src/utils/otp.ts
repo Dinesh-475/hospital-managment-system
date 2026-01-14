@@ -2,17 +2,38 @@ import prisma from '../prisma';
 import { otpCache } from '../config/redis';
 import crypto from 'crypto';
 
-// Cryptographically secure OTP generation
+import { KeyUtilities } from './authenticator/otp-generator';
+import { OTPType, OTPAlgorithm } from './authenticator/otp-types';
+
+// Cryptographically secure OTP generation using Authenticator-dev library
 export const generateOTP = (): string => {
-  // Use crypto for secure random generation (better than Math.random)
-  const buffer = crypto.randomBytes(3); // 3 bytes = 6 hex digits
-  const otp = (buffer.readUIntBE(0, 3) % 900000) + 100000;
-  return otp.toString();
+  // Generate a random secret (hex)
+  const buffer = crypto.randomBytes(20);
+  const secret = buffer.toString('hex');
+  
+  // Use KeyUtilities to generate a 6-digit code using HMAC-SHA1 (simulating TOTP behavior but with unique secret per request)
+  // This ensures "smooth and accurate" generation using the requested library
+  try {
+    const otp = KeyUtilities.generate(
+      OTPType.hex,
+      secret,
+      0, // counter (0 is fine since secret is random)
+      30, // period
+      6, // length
+      OTPAlgorithm.SHA1
+    );
+    return otp;
+  } catch (error) {
+    console.error('Error generating OTP with Authenticator lib:', error);
+    // Fallback
+    const fallbackBuffer = crypto.randomBytes(3);
+    return ((fallbackBuffer.readUIntBE(0, 3) % 900000) + 100000).toString();
+  }
 };
 
-// Fast OTP generation alternative (for high throughput)
+// Fast OTP generation alternative (wrapper around standard generation for now)
 export const generateOTPFast = (): string => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return generateOTP(); // Use the robust one
 };
 
 // Send OTP via SMS/Email (integrate with Twilio/SES in production)

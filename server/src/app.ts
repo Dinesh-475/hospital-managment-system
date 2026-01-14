@@ -5,6 +5,9 @@ import compression from 'compression';
 import { errorHandler } from './middleware/errorMiddleware';
 import routes from './routes';
 import { configureSecurity } from './config/security';
+import passport from 'passport';
+import cookieSession from 'cookie-session';
+import './utils/passport';
 
 const app = express();
 
@@ -64,6 +67,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Auth Middleware (Must be before routes)
+app.use(cookieSession({
+  name: 'session',
+  keys: [process.env.COOKIE_KEY || 'secret_key_1', process.env.COOKIE_KEY_2 || 'secret_key_2'],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Routes
 app.use('/api', routes);
 
@@ -75,6 +88,8 @@ app.get('/health', (req, res) => {
     uptime: process.uptime()
   });
 });
+
+
 
 // Error Handling
 app.use(errorHandler);

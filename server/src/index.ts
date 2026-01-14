@@ -1,6 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// Validate environment variables before starting server
+import validateEnv from './config/validateEnv';
+validateEnv();
+
 import http from 'http';
 import { Server } from 'socket.io';
 import app from './app';
