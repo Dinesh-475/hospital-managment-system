@@ -12,7 +12,6 @@ export const MessagesPage: React.FC = () => {
     conversations,
     activeConversation,
     messages,
-    isLoading,
     isTyping,
     searchQuery,
     setActiveConversation,
@@ -30,7 +29,7 @@ export const MessagesPage: React.FC = () => {
   return (
     <div className="h-screen flex bg-gray-50">
       {/* Left Sidebar - Conversation List */}
-      <div className="w-80 flex-shrink-0">
+      <div className="w-80 shrink-0">
         <ConversationList
           conversations={conversations}
           activeConversation={activeConversation}
@@ -58,7 +57,7 @@ export const MessagesPage: React.FC = () => {
                     className="w-10 h-10 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
                     {activeConversation.avatar || activeConversation.name.charAt(0)}
                   </div>
                 )}
@@ -162,7 +161,7 @@ export const MessagesPage: React.FC = () => {
                     className="w-24 h-24 rounded-full object-cover mb-3"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold mb-3">
+                  <div className="w-24 h-24 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold mb-3">
                     {activeConversation.avatar || activeConversation.name.charAt(0)}
                   </div>
                 )}

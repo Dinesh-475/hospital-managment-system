@@ -5,8 +5,7 @@ import {
   TestResult, 
   Notification, 
   HealthMetric,
-  Announcement,
-  Vaccination 
+  Announcement
 } from '@/types/patient';
 
 // Generate realistic patient data

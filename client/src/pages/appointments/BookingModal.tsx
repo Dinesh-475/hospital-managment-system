@@ -8,8 +8,17 @@ import { Loader2 } from 'lucide-react';
 import axios from '@/lib/axios';
 import { toast } from 'sonner';
 
+interface Doctor {
+  doctorId: string;
+  specialization: string;
+  user: {
+    firstName: string;
+    lastName: string;
+  };
+}
+
 interface BookingModalProps {
-    doctor: any;
+    doctor: Doctor | null;
     isOpen: boolean;
     onClose: () => void;
 }
@@ -22,6 +31,8 @@ export const BookingModal = ({ doctor, isOpen, onClose }: BookingModalProps) => 
     const [loading, setLoading] = useState(false);
 
     const handleBooking = async () => {
+        if (!doctor) return;
+        
         setLoading(true);
         try {
             await axios.post('/appointments', {
@@ -33,8 +44,11 @@ export const BookingModal = ({ doctor, isOpen, onClose }: BookingModalProps) => 
             toast.success("Appointment booked successfully!");
             onClose();
             setStep(1); // Reset
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || "Booking failed");
+        } catch (error) {
+            const errorMessage = error instanceof Error && 'response' in error 
+                ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+                : "Booking failed";
+            toast.error(errorMessage || "Booking failed");
         } finally {
             setLoading(false);
         }

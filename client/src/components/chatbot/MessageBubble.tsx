@@ -18,7 +18,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isUser, d
       className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
     >
       {/* Avatar */}
-      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+      <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
         isUser ? 'bg-blue-600' : 'bg-gray-300'
       }`}>
         {isUser ? (
@@ -35,7 +35,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isUser, d
             ? 'bg-blue-600 text-white rounded-tr-none' 
             : 'bg-white text-gray-900 shadow-md rounded-tl-none'
         }`}>
-          <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+          <p className="text-sm whitespace-pre-wrap wrap-break-word">{message.content}</p>
         </div>
         
         {/* Timestamp */}

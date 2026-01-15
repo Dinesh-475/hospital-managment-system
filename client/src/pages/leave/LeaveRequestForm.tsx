@@ -27,7 +27,7 @@ export const LeaveRequestForm: React.FC = () => {
   }, []);
 
   const loadBalance = async () => {
-    const data = await getLeaveBalance('current-user');
+    const data = await getLeaveBalance();
     setBalance(data);
   };
 
@@ -79,7 +79,7 @@ export const LeaveRequestForm: React.FC = () => {
       setReason('');
       setDocuments([]);
       loadBalance();
-    } catch (error) {
+    } catch {
       toast.error('Failed to submit leave request');
     } finally {
       setIsSubmitting(false);
@@ -87,7 +87,7 @@ export const LeaveRequestForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-purple-50 p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Request Leave</h1>

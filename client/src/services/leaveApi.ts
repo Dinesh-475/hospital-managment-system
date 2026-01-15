@@ -1,7 +1,7 @@
-import { LeaveRequest, LeaveBalance, LeaveCalendarEvent, LeaveType, LeaveStatus } from '@/types/leave';
+import { LeaveRequest, LeaveBalance, LeaveCalendarEvent, LeaveType } from '@/types/leave';
 
 // Mock leave requests
-let mockLeaveRequests: LeaveRequest[] = [
+const mockLeaveRequests: LeaveRequest[] = [
   {
     id: 'leave-1',
     employeeId: 'user-1',
@@ -89,7 +89,7 @@ export async function getPendingLeaveRequests(): Promise<LeaveRequest[]> {
   return mockLeaveRequests.filter(r => r.status === 'pending');
 }
 
-export async function getLeaveBalance(employeeId: string): Promise<LeaveBalance> {
+export async function getLeaveBalance(): Promise<LeaveBalance> {
   await new Promise(resolve => setTimeout(resolve, 200));
   return mockLeaveBalance;
 }

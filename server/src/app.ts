@@ -60,10 +60,15 @@ app.use(express.urlencoded({
 // Performance: Add response time header for monitoring
 app.use((req, res, next) => {
   const start = Date.now();
-  res.on('finish', () => {
+  
+  // Use 'once' and set header before response is sent
+  const originalSend = res.send;
+  res.send = function(data) {
     const duration = Date.now() - start;
     res.setHeader('X-Response-Time', `${duration}ms`);
-  });
+    return originalSend.call(this, data);
+  };
+  
   next();
 });
 

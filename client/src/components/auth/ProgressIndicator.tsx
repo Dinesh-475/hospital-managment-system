@@ -47,9 +47,9 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         </div>
 
         {/* Connecting Line */}
-        <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 -z-0" style={{ width: 'calc(100% - 40px)', marginLeft: '20px' }}>
+        <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 z-0" style={{ width: 'calc(100% - 40px)', marginLeft: '20px' }}>
           <motion.div
-            className="h-full bg-gradient-to-r from-green-500 to-blue-600"
+            className="h-full bg-linear-to-r from-green-500 to-blue-600"
             initial={{ width: '0%' }}
             animate={{ width: `${(currentStep / (totalSteps - 1)) * 100}%` }}
             transition={{ duration: 0.5 }}

@@ -2,8 +2,6 @@ import { AttendanceRecord, AttendanceStats, AttendanceStatus } from '@/types/att
 import { GeoLocation } from '@/types/attendance';
 import { calculateLateMinutes, HOSPITAL_CONFIG } from '@/services/geofencing';
 
-// Mock attendance data
-const mockAttendanceRecords: AttendanceRecord[] = [];
 
 // Generate mock data for current month
 function generateMockAttendance(userId: string, userName: string): AttendanceRecord[] {

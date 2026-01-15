@@ -1,7 +1,7 @@
 import { User, RegistrationData, OTPVerification, ApiResponse, LoginResponse } from '@/types/auth';
 
 // Simulated database
-let users: User[] = [
+const users: User[] = [
   {
     id: '1',
     name: 'Dr. Sarah Johnson',

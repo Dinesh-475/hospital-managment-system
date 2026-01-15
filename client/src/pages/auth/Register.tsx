@@ -32,20 +32,20 @@ export const Register: React.FC = () => {
     name: '',
     email: '',
     phone: '',
-    role: null as any, // Initial state is null, validation ensures it's set before submission
+    role: null as 'patient' | 'doctor' | 'staff' | 'manager' | 'admin' | null,
     patientData: {},
     doctorData: {},
     staffData: {},
     profilePhoto: undefined
   });
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: unknown) => {
     if (field.includes('.')) {
       const [parent, child] = field.split('.');
       setFormData(prev => ({
         ...prev,
         [parent]: {
-          ...(prev[parent as keyof RegistrationData] as any),
+          ...(prev[parent as keyof RegistrationData] as Record<string, unknown>),
           [child]: value
         }
       }));
@@ -174,7 +174,7 @@ export const Register: React.FC = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-teal-50">
+      <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-linear-to-br from-blue-50 via-white to-teal-50">
         <AnimatedBackground />
         <div className="relative z-10 w-full max-w-2xl px-4">
           <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-10">
@@ -186,7 +186,7 @@ export const Register: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-teal-50 py-12">
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-linear-to-br from-blue-50 via-white to-teal-50 py-12">
       <AnimatedBackground />
 
       <motion.div

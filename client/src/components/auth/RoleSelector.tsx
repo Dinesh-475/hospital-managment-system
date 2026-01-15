@@ -112,7 +112,7 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onSele
           >
             <div className="flex items-start gap-4">
               <div className={`
-                p-3 rounded-xl bg-gradient-to-br ${colors.gradient}
+                p-3 rounded-xl bg-linear-to-br ${colors.gradient}
                 ${isSelected ? 'shadow-lg' : ''}
               `}>
                 <Icon className="w-6 h-6 text-white" />
@@ -131,7 +131,7 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onSele
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className={`w-6 h-6 rounded-full bg-gradient-to-br ${colors.gradient} flex items-center justify-center`}
+                  className={`w-6 h-6 rounded-full bg-linear-to-br ${colors.gradient} flex items-center justify-center`}
                 >
                   <span className="text-white text-xs font-bold">✓</span>
                 </motion.div>

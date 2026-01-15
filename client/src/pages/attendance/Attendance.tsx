@@ -4,9 +4,17 @@ import { AttendanceCalendar } from '@/components/attendance/AttendanceCalendar';
 import { attendanceService } from '@/services/attendanceService';
 import { isSameDay, startOfDay } from 'date-fns';
 
+interface AttendanceRecord {
+  id: string;
+  date: string;
+  attendanceStatus: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+}
+
 export const AttendancePage = () => {
-    const [history, setHistory] = useState<any[]>([]);
-    const [todayRecord, setTodayRecord] = useState<any>(null);
+    const [history, setHistory] = useState<AttendanceRecord[]>([]);
+    const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
     // const [loading, setLoading] = useState(true);
 
     const fetchAttendance = async () => {
@@ -16,7 +24,7 @@ export const AttendancePage = () => {
             
             // Find today's record
             const today = startOfDay(new Date());
-            const todayRec = (data.data || []).find((r: any) => 
+            const todayRec = (data.data || []).find((r: AttendanceRecord) => 
                 isSameDay(new Date(r.date), today)
             );
             setTodayRecord(todayRec);

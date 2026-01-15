@@ -9,8 +9,8 @@ import http from 'http';
 import { Server } from 'socket.io';
 import app from './app';
 import { setupSocket } from './socket';
-import prisma from './prisma';
-import redis from './config/redis';
+import connectDB from './config/database';
+import mongoose from 'mongoose';
 
 const PORT = process.env.PORT || 5001;
 const server = http.createServer(app);
@@ -38,64 +38,39 @@ app.set('io', io);
 
 const startServer = async () => {
   try {
-    // Connect to database with retry logic
-    let dbConnected = false;
-    let retries = 3;
+    // Connect to MongoDB
+    await connectDB();
     
-    while (!dbConnected && retries > 0) {
-      try {
-        await prisma.$connect();
-        console.log('✅ Database connected successfully');
-        dbConnected = true;
-      } catch (error: any) {
-        retries--;
-        if (retries === 0) {
-          console.error('❌ Database connection failed after retries');
-          console.error('💡 Make sure PostgreSQL is running and DATABASE_URL is correct');
-          console.error('💡 Run: docker compose up -d (in server directory)');
-          // Don't exit - allow server to start for development
-          // In production, you might want to exit here
-        } else {
-          console.log(`⏳ Database connection failed, retrying... (${retries} attempts left)`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        }
-      }
-    }
-
-    // Redis connection is handled in redis.ts with graceful degradation
-    
-    // Start server
+    // Start Express server
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📡 API: http://localhost:${PORT}/api`);
       console.log(`🏥 Health: http://localhost:${PORT}/health`);
-      if (!dbConnected) {
-        console.log('⚠️  Running without database connection');
-      }
     });
+
+    // Graceful shutdown function
+    const shutdown = async () => {
+      console.log('\n🛑 Shutting down gracefully...');
+      
+      server.close(async () => {
+        console.log('✅ HTTP server closed');
+        
+        // Close MongoDB connection
+        await mongoose.connection.close();
+        console.log('✅ MongoDB connection closed');
+        
+        process.exit(0);
+      });
+    };
+
+    // Listen for termination signals
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
+
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
 };
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully...');
-  server.close(() => {
-    prisma.$disconnect();
-    redis.quit();
-    process.exit(0);
-  });
-});
-
-process.on('SIGINT', async () => {
-  console.log('SIGINT received, shutting down gracefully...');
-  server.close(() => {
-    prisma.$disconnect();
-    redis.quit();
-    process.exit(0);
-  });
-});
 
 startServer();

@@ -42,7 +42,7 @@ const mockUsers: User[] = [
 ];
 
 // Mock conversations
-let mockConversations: Conversation[] = [
+const mockConversations: Conversation[] = [
   {
     id: 'conv-1',
     type: 'direct',

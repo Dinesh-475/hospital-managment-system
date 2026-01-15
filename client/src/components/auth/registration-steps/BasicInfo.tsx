@@ -4,9 +4,6 @@ import { UserRole } from '@/types/auth';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RoleSelector } from '@/components/auth/RoleSelector';
-import { Button } from '@/components/ui/button';
-import { Check, Loader2 } from 'lucide-react';
-import { OTPInput } from '@/components/auth/OTPInput';
 
 interface BasicInfoProps {
   data: {
@@ -17,28 +14,12 @@ interface BasicInfoProps {
   };
   onChange: (field: string, value: any) => void;
   errors: Record<string, string>;
-  
-  // OTP Props
-  isPhoneVerified?: boolean;
-  otpSent?: boolean;
-  otp?: string;
-  onOtpChange?: (otp: string) => void;
-  onSendOTP?: () => void;
-  onVerifyOTP?: () => void;
-  isLoading?: boolean;
 }
 
 export const BasicInfo: React.FC<BasicInfoProps> = ({ 
     data, 
     onChange, 
-    errors,
-    isPhoneVerified,
-    otpSent,
-    otp,
-    onOtpChange,
-    onSendOTP,
-    onVerifyOTP,
-    isLoading
+    errors
 }) => {
   return (
     <motion.div
@@ -95,64 +76,18 @@ export const BasicInfo: React.FC<BasicInfoProps> = ({
                 value={data.phone}
                 onChange={(e) => onChange('phone', e.target.value)}
                 placeholder="9876543210"
-                disabled={isPhoneVerified}
-                className={`h-12 ${errors.phone ? 'border-red-500' : ''} ${isPhoneVerified ? 'bg-green-50 text-green-700 border-green-200' : ''}`}
+                className={`h-12 ${errors.phone ? 'border-red-500' : ''}`}
                 />
-                {isPhoneVerified && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600">
-                        <Check className="w-5 h-5" />
-                    </div>
-                )}
             </div>
             
-            {!isPhoneVerified && onSendOTP && !otpSent && (
-                <Button 
-                    type="button" 
-                    onClick={onSendOTP}
-                    disabled={!data.phone || data.phone.length < 10 || isLoading}
-                    className="h-12 px-6"
-                >
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
-                </Button>
-            )}
+            
         </div>
         
         {errors.phone && (
           <p className="text-sm text-red-600 mt-1">{errors.phone}</p>
         )}
         
-        {/* OTP Input Section */}
-        {otpSent && !isPhoneVerified && onVerifyOTP && onOtpChange && (
-            <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="mt-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100"
-            >
-                <Label className="text-sm font-semibold text-blue-900 mb-3 block text-center">
-                    Enter Verification Code
-                </Label>
-                <div className="flex justify-center mb-4">
-                    <OTPInput
-                        value={otp || ''}
-                        onChange={onOtpChange}
-                        onComplete={() => {}}
-                        error={!!errors.otp}
-                    />
-                </div>
-                {errors.otp && (
-                    <p className="text-sm text-red-600 text-center mb-3 font-medium">{errors.otp}</p>
-                )}
-                
-                <Button 
-                    type="button" 
-                    onClick={onVerifyOTP}
-                    disabled={!otp || otp.length !== 6 || isLoading}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                >
-                    {isLoading ? 'Verifying...' : 'Verify Phone Number'}
-                </Button>
-            </motion.div>
-        )}
+        
       </div>
 
       <div>

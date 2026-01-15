@@ -42,7 +42,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       <AnimatePresence>
-        {groupedMessages.map((group, groupIndex) => (
+        {groupedMessages.map((group) => (
           <div key={group.date}>
             {/* Date Separator */}
             <div className="flex items-center justify-center my-6">
@@ -52,7 +52,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
             </div>
 
             {/* Messages */}
-            {group.messages.map((message, index) => (
+            {group.messages.map((message) => (
               <MessageBubble
                 key={message.id}
                 message={message}

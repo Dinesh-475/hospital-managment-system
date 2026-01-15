@@ -21,7 +21,7 @@ export const Success: React.FC<SuccessProps> = ({ userName, onContinue }) => {
         transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
         className="relative inline-block"
       >
-        <div className="w-32 h-32 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto shadow-2xl">
+        <div className="w-32 h-32 bg-linear-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto shadow-2xl">
           <CheckCircle className="w-16 h-16 text-white" />
         </div>
         
@@ -60,7 +60,7 @@ export const Success: React.FC<SuccessProps> = ({ userName, onContinue }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="bg-gradient-to-r from-blue-50 to-teal-50 rounded-2xl p-6"
+        className="bg-linear-to-r from-blue-50 to-teal-50 rounded-2xl p-6"
       >
         <p className="text-gray-700">
           You're all set! Start exploring your personalized dashboard and manage your healthcare journey with ease.

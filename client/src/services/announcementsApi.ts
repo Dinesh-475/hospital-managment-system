@@ -1,7 +1,7 @@
 import { Announcement, AnnouncementCategory } from '@/types/announcements';
 
 // Mock announcements
-let mockAnnouncements: Announcement[] = [
+const mockAnnouncements: Announcement[] = [
   {
     id: 'ann-1',
     title: 'New Safety Protocols Effective Immediately',

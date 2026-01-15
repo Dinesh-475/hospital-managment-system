@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Reply, Smile, MoreVertical, FileText, Image as ImageIcon, Download } from 'lucide-react';
-import { Message } from '@/types/messaging';
+import { Reply, Smile, FileText, Download } from 'lucide-react';
+import { Message, FileAttachment } from '@/types/messaging';
 
 interface MessageBubbleProps {
   message: Message;
@@ -20,7 +20,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const [showReactions, setShowReactions] = useState(false);
   const isSent = message.senderId === 'current-user';
 
-  const renderAttachment = (attachment: typeof message.attachments[0]) => {
+  const renderAttachment = (attachment: FileAttachment) => {
     const isImage = attachment.type.startsWith('image/');
     
     return (
@@ -72,7 +72,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         <img
           src={message.senderAvatar}
           alt={message.senderName}
-          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+          className="w-8 h-8 rounded-full object-cover shrink-0"
         />
       )}
 
@@ -101,7 +101,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                 : 'bg-gray-200 text-gray-900 rounded-bl-sm'
             }`}
           >
-            <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+            <p className="text-sm whitespace-pre-wrap wrap-break-word">{message.content}</p>
             
             {/* Attachments */}
             {message.attachments && message.attachments.length > 0 && (

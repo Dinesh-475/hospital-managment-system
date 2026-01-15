@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Mic } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -41,7 +41,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }
         <button
           type="submit"
           disabled={!message.trim() || disabled}
-          className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="shrink-0 w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
           <Send className="w-5 h-5" />
         </button>

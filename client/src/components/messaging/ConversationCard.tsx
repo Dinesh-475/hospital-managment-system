@@ -64,7 +64,7 @@ export const ConversationCard: React.FC<ConversationCardProps> = ({
     >
       <div className="flex items-start gap-3">
         {/* Avatar */}
-        <div className="relative flex-shrink-0">
+        <div className="relative shrink-0">
           {conversation.avatar && conversation.avatar.startsWith('http') ? (
             <img
               src={conversation.avatar}
@@ -72,7 +72,7 @@ export const ConversationCard: React.FC<ConversationCardProps> = ({
               className="w-12 h-12 rounded-full object-cover"
             />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold">
+            <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold">
               {conversation.avatar || conversation.name.charAt(0)}
             </div>
           )}
@@ -92,7 +92,7 @@ export const ConversationCard: React.FC<ConversationCardProps> = ({
                 <Pin className="w-4 h-4 text-blue-600 fill-blue-600" />
               )}
             </div>
-            <span className="text-xs text-gray-500 flex-shrink-0">
+            <span className="text-xs text-gray-500 shrink-0">
               {conversation.lastMessage && formatTimestamp(conversation.lastMessage.timestamp)}
             </span>
           </div>
@@ -106,7 +106,7 @@ export const ConversationCard: React.FC<ConversationCardProps> = ({
             </div>
 
             {conversation.unreadCount > 0 && (
-              <div className="ml-2 flex-shrink-0 w-5 h-5 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+              <div className="ml-2 shrink-0 w-5 h-5 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
                 {conversation.unreadCount}
               </div>
             )}
@@ -114,7 +114,7 @@ export const ConversationCard: React.FC<ConversationCardProps> = ({
         </div>
 
         {/* Menu */}
-        <div className="relative flex-shrink-0">
+        <div className="relative shrink-0">
           <button
             onClick={(e) => {
               e.stopPropagation();

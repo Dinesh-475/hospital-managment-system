@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ThumbsUp, MessageCircle, Eye, Pin, Calendar, User, Download, ChevronRight } from 'lucide-react';
+import { ThumbsUp, MessageCircle, Eye, Pin, Calendar, Download, ChevronRight } from 'lucide-react';
 import { Announcement } from '@/types/announcements';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -79,7 +79,7 @@ export const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
                 className="w-6 h-6 rounded-full object-cover"
               />
             ) : (
-              <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+              <div className="w-6 h-6 bg-linear-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                 {announcement.authorName.charAt(0)}
               </div>
             )}
@@ -124,7 +124,7 @@ export const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
                 className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <Download className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                  <Download className="w-4 h-4 text-gray-600 shrink-0" />
                   <span className="text-sm text-gray-700 truncate">{attachment.name}</span>
                 </div>
                 <button className="p-1 hover:bg-gray-200 rounded transition-colors">

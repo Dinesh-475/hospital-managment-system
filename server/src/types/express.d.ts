@@ -10,8 +10,16 @@ export interface TokenPayload {
 
 declare global {
   namespace Express {
+    // Augment Passport's User interface
+    interface User {
+      userId: string;
+      role: UserRole | string;
+      email: string;
+      tokenVersion?: number;
+    }
+
     interface Request {
-      user?: TokenPayload;
+      user?: User;
     }
   }
 }

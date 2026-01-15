@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, X, Check, CheckCheck, Trash2 } from 'lucide-react';
+import { Bell, X, Trash2 } from 'lucide-react';
 import { Notification } from '@/types/notifications';
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification } from '@/services/notificationsApi';
 import { formatDistanceToNow } from 'date-fns';
@@ -11,7 +11,20 @@ export const NotificationCenter: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const loadNotifications = useCallback(async () => {
+    setIsLoading(true);
+    const data = await getNotifications();
+    setNotifications(data);
+    setIsLoading(false);
+  }, []);
+
+  const loadUnreadCount = useCallback(async () => {
+    const count = await getUnreadCount();
+    setUnreadCount(count);
+  }, []);
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadNotifications();
     loadUnreadCount();
 
@@ -21,19 +34,7 @@ export const NotificationCenter: React.FC = () => {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
-
-  const loadNotifications = async () => {
-    setIsLoading(true);
-    const data = await getNotifications();
-    setNotifications(data);
-    setIsLoading(false);
-  };
-
-  const loadUnreadCount = async () => {
-    const count = await getUnreadCount();
-    setUnreadCount(count);
-  };
+  }, [loadNotifications, loadUnreadCount]);
 
   const handleMarkAsRead = async (id: string) => {
     await markAsRead(id);
@@ -182,7 +183,7 @@ export const NotificationCenter: React.FC = () => {
                       >
                         <div className="flex gap-3">
                           {/* Icon */}
-                          <div className="flex-shrink-0 text-2xl">
+                          <div className="shrink-0 text-2xl">
                             {notification.icon || getNotificationIcon(notification.type)}
                           </div>
 
@@ -193,7 +194,7 @@ export const NotificationCenter: React.FC = () => {
                                 {notification.title}
                               </h4>
                               {!notification.isRead && (
-                                <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-1" />
+                                <div className="w-2 h-2 bg-blue-600 rounded-full shrink-0 mt-1" />
                               )}
                             </div>
                             <p className="text-sm text-gray-600 line-clamp-2">
@@ -215,7 +216,7 @@ export const NotificationCenter: React.FC = () => {
                               e.stopPropagation();
                               handleDelete(notification.id);
                             }}
-                            className="flex-shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                            className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
                           >
                             <Trash2 className="w-4 h-4 text-gray-400" />
                           </button>

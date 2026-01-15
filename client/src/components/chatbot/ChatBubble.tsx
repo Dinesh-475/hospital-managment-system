@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Minimize2, Maximize2 } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 
 interface ChatBubbleProps {
   onClick: () => void;
@@ -23,7 +23,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ onClick, isOpen, unreadC
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           onClick={onClick}
-          className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-gradient-to-br from-blue-600 to-teal-600 rounded-full shadow-2xl flex items-center justify-center text-white hover:shadow-blue-500/50 transition-shadow"
+          className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-linear-to-br from-blue-600 to-teal-600 rounded-full shadow-2xl flex items-center justify-center text-white hover:shadow-blue-500/50 transition-shadow"
         >
           <MessageCircle className="w-7 h-7" />
           

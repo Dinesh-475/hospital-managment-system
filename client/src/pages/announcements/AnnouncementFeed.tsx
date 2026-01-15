@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Filter, TrendingUp, Calendar, User } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Search, TrendingUp, Calendar } from 'lucide-react';
 import { Announcement, AnnouncementCategory } from '@/types/announcements';
-import { getAnnouncements, addReaction, removeReaction, searchAnnouncements, filterByCategory } from '@/services/announcementsApi';
+import { getAnnouncements, addReaction, removeReaction } from '@/services/announcementsApi';
 import { AnnouncementCard } from '@/components/announcements/AnnouncementCard';
 
 const CATEGORIES: { value: AnnouncementCategory | 'all'; label: string; color: string }[] = [
@@ -22,22 +21,18 @@ export const AnnouncementFeed: React.FC = () => {
   const [sortBy, setSortBy] = useState<'recent' | 'popular'>('recent');
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadAnnouncements();
-  }, []);
-
-  useEffect(() => {
-    filterAndSortAnnouncements();
-  }, [announcements, selectedCategory, sortBy, searchQuery]);
-
-  const loadAnnouncements = async () => {
+  const loadAnnouncements = useCallback(async () => {
     setIsLoading(true);
     const data = await getAnnouncements();
     setAnnouncements(data);
     setIsLoading(false);
-  };
+  }, []);
 
-  const filterAndSortAnnouncements = () => {
+  useEffect(() => {
+    void loadAnnouncements();
+  }, [loadAnnouncements]);
+
+  useEffect(() => {
     let filtered = [...announcements];
 
     // Filter by category
@@ -66,7 +61,7 @@ export const AnnouncementFeed: React.FC = () => {
     filtered.sort((a, b) => (a.isPinned === b.isPinned ? 0 : a.isPinned ? -1 : 1));
 
     setFilteredAnnouncements(filtered);
-  };
+  }, [announcements, selectedCategory, sortBy, searchQuery]);
 
   const handleReaction = async (announcementId: string, emoji: string, hasReacted: boolean) => {
     if (hasReacted) {
@@ -78,7 +73,7 @@ export const AnnouncementFeed: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-6">
+    <div className="min-h-screen bg-linear-to-br from-purple-50 to-pink-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">

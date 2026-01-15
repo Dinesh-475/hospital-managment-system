@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Note: Uncomment the following line when running in GitHub Actions to enable database access
+      # DATABASE_URL: ${{ secrets.DATABASE_URL }}
       JWT_SECRET: "test-secret"
       JWT_REFRESH_SECRET: "test-refresh-secret"
 

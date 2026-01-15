@@ -16,7 +16,7 @@ export const MarkAttendance: React.FC = () => {
   useEffect(() => {
     // Check location on mount
     checkLocation();
-  }, []);
+  }, [checkLocation]);
 
   const handleMarkAttendance = async () => {
     if (!locationCheck || locationCheck.status !== 'inside' || !location || !currentUser) {
@@ -37,7 +37,7 @@ export const MarkAttendance: React.FC = () => {
       toast.success('Attendance marked successfully!', {
         description: `Clock in time: ${new Date().toLocaleTimeString()}`
       });
-    } catch (error) {
+    } catch {
       toast.error('Failed to mark attendance. Please try again.');
     } finally {
       setIsMarking(false);
@@ -77,7 +77,7 @@ export const MarkAttendance: React.FC = () => {
   const canMarkAttendance = locationCheck?.status === 'inside' && !hasMarkedToday && !isMarking;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 p-6">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-teal-50 p-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -109,7 +109,7 @@ export const MarkAttendance: React.FC = () => {
                 transition={{ duration: 2, repeat: Infinity }}
                 className={`absolute inset-0 bg-${getStatusColor()}-500 rounded-full blur-xl`}
               />
-              <div className={`relative w-20 h-20 bg-${getStatusColor()}-500 rounded-full flex items-center justify-center text-white shadow-lg`}>
+              <div className="w-16 h-16 bg-linear-to-br from-blue-600 to-teal-600 rounded-full flex items-center justify-center text-white shadow-lg">
                 {getStatusIcon()}
               </div>
             </div>

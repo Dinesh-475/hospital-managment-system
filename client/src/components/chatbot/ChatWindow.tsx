@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Minimize2, Download } from 'lucide-react';
+import { X, Download } from 'lucide-react';
 import { Message } from '@/types/chatbot';
 import { MessageBubble } from './MessageBubble';
 import { ChatInput } from './ChatInput';
@@ -46,7 +46,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           className="fixed bottom-6 right-6 z-50 w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-teal-600 text-white p-4 flex items-center justify-between">
+          <div className="bg-linear-to-r from-blue-600 to-teal-600 text-white p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                 <span className="text-lg">🤖</span>

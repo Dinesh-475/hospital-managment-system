@@ -1,4 +1,4 @@
-import { GeoLocation, GeofenceConfig, LocationCheck, LocationStatus } from '@/types/attendance';
+import { GeoLocation, GeofenceConfig, LocationCheck, WorkingHours } from '@/types/attendance';
 
 // Hospital Configuration (Delhi, India - example coordinates)
 export const HOSPITAL_CONFIG: GeofenceConfig = {
@@ -114,7 +114,7 @@ export function checkGeofence(
  * In production, this would use navigator.geolocation
  */
 export async function getCurrentLocation(): Promise<GeoLocation> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     // Simulate location fetch delay
     setTimeout(() => {
       // For development: return a location near hospital (within geofence)
