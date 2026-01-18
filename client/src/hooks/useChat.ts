@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Message, Conversation, AIResponse, QuickAction } from '@/types/chatbot';
-import { sendMessageToClaude, sendMessageMock, PATIENT_SYSTEM_PROMPT, DOCTOR_SYSTEM_PROMPT } from '@/services/claudeApi';
+import { Message, Conversation, QuickAction } from '@/types/chatbot';
+import { sendMessageMock, PATIENT_SYSTEM_PROMPT, DOCTOR_SYSTEM_PROMPT } from '@/services/claudeApi';
 import { toast } from 'sonner';
 
 const QUICK_ACTIONS: QuickAction[] = [
@@ -42,7 +42,7 @@ export function useChat(userType: 'patient' | 'doctor', userId: string) {
         messages: [welcomeMessage]
       }));
     }
-  }, []);
+  }, [conversation.messages.length, userType]);
 
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;

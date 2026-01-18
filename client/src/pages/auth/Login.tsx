@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Stethoscope } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { authService } from '@/services/authService';
 import { Input } from '@/components/ui/input';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { loginWithPassword, isLoading } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'patient' | 'staff'>('patient');
@@ -16,6 +18,35 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
 
   const [errors, setErrors] = useState<{ staffId?: string; password?: string }>({});
+
+  // Check for Google OAuth callback - handle redirect after Google login
+  useEffect(() => {
+    const googleAuth = searchParams.get('google_auth');
+    
+    if (googleAuth === 'success') {
+      // Backend redirected here after successful Google OAuth
+      // Check session after a brief delay to allow backend to set session
+      const checkSession = async () => {
+        try {
+          const response = await authService.checkAuthSession();
+          if (response.success && response.data?.user) {
+            // User is authenticated, redirect to dashboard
+            navigate('/dashboard', { replace: true });
+          }
+        } catch {
+          // Not authenticated, stay on login page
+        }
+      };
+      
+      // Remove query param from URL
+      const timeoutId = setTimeout(() => {
+        checkSession();
+        window.history.replaceState({}, '', '/login');
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [searchParams, navigate]);
 
   const handleStaffLogin = async () => {
       if (!staffId || !password) {
@@ -33,7 +64,8 @@ export const Login: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.open('http://localhost:5001/api/auth/google', '_self');
+    // Redirect to Google OAuth - backend will handle the flow
+    window.location.href = 'http://localhost:5001/api/auth/google';
   };
 
   return (
@@ -106,16 +138,17 @@ export const Login: React.FC = () => {
           </div>
 
           {/* Form */}
-          <AnimatePresence mode="wait">
-            {activeTab === 'patient' ? (
+          <div className="relative min-h-[200px]">
+            <AnimatePresence mode="wait">
+              {activeTab === 'patient' ? (
                 // PATIENT FLOW - Google OAuth Only
                 <motion.div
                     key="patient"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-5"
+                    initial={{ opacity: 0, x: -10, scale: 0.98 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: 10, scale: 0.98 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                    className="space-y-5 absolute inset-0 w-full will-change-transform"
                 >
                     <motion.button
                         whileHover={{ scale: 1.02 }}
@@ -138,15 +171,15 @@ export const Login: React.FC = () => {
                         </button>
                     </div>
                 </motion.div>
-            ) : (
+              ) : (
                 // STAFF FLOW - Staff ID + Password
                 <motion.div
                     key="staff"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-5"
+                    initial={{ opacity: 0, x: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: -10, scale: 0.98 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                    className="space-y-5 absolute inset-0 w-full will-change-transform"
                 >
                     <div className="space-y-4">
                         <div>
@@ -183,8 +216,9 @@ export const Login: React.FC = () => {
                         {isLoading ? 'Logging in...' : 'Login to Dashboard'}
                     </motion.button>
                 </motion.div>
-            )}
-          </AnimatePresence>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </motion.div>
     </div>

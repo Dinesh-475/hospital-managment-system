@@ -35,8 +35,9 @@ router.get('/google/callback',
   }),
   (req, res) => {
     console.log('✅ Google OAuth successful, user:', req.user);
-    // Successful authentication, redirect to client
-    res.redirect(process.env.CLIENT_URL || 'http://localhost:5173');
+    // Successful authentication, redirect to client with success flag
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    res.redirect(`${clientUrl}/login?google_auth=success`);
   }
 );
 

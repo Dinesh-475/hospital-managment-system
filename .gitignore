@@ -30,6 +30,9 @@ dist/
 .next/
 out/
 .nuxt/
+client/dist/
+server/dist/
+server/uploads/
 
 # ============================================
 # Logs

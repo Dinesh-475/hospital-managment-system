@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { User, AuthState, OTPVerification, RegistrationData } from '@/types/auth';
+import { AuthState, OTPVerification, RegistrationData, ApiResponse, LoginResponse } from '@/types/auth';
 // Switch to real backend service
 import { authService } from '@/services/authService';
 import { toast } from 'sonner';
@@ -10,8 +10,8 @@ interface AuthContextType extends AuthState {
   loginWithPassword: (identifier: string, password: string) => Promise<boolean>;
   verifyRegistrationOTP: (phoneNumber: string, otp: string) => Promise<boolean>;
   register: (data: RegistrationData) => Promise<boolean>;
-  logout: () => void;
   checkSession: () => boolean;
+  logout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +26,46 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     sessionExpiry: null,
     isLoading: false
   });
+
+  // Check for existing session (e.g. Google Auth) on mount
+  useEffect(() => {
+    const initAuth = async () => {
+        try {
+            const response = await authService.checkAuthSession();
+            if (response.success && response.data?.user) {
+                const userData = response.data.user;
+                setAuthState({
+                    currentUser: userData,
+                    isAuthenticated: true,
+                    sessionExpiry: new Date(Date.now() + SESSION_DURATION),
+                    isLoading: false
+                });
+            }
+        } catch {
+            // No session
+        }
+    };
+    initAuth();
+  }, []);
+
+
+
+  // Logout
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // Ignore error, just clear local state
+    }
+    
+    setAuthState({
+      currentUser: null,
+      isAuthenticated: false,
+      sessionExpiry: null,
+      isLoading: false
+    });
+    toast.info('Logged out successfully');
+  }, []);
 
   // Check session validity
   const checkSession = useCallback((): boolean => {
@@ -48,7 +88,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     
     return true;
-  }, [authState.sessionExpiry]);
+  }, [authState.sessionExpiry, logout]);
 
   // Auto-logout on session expiry
   useEffect(() => {
@@ -61,27 +101,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => clearInterval(checkInterval);
   }, [authState.sessionExpiry, checkSession]);
 
-  // Check for existing session (e.g. Google Auth) on mount
-  useEffect(() => {
-      const initAuth = async () => {
-          try {
-              const response = await authService.checkAuthSession();
-              if (response.success && (response as any).user) {
-                  const userData = (response as any).user;
-                  setAuthState({
-                      currentUser: userData,
-                      isAuthenticated: true,
-                      sessionExpiry: new Date(Date.now() + SESSION_DURATION),
-                      isLoading: false
-                  });
-              }
-          } catch (e) {
-              // No session
-          }
-      };
-      initAuth();
-  }, []);
-
   // Send OTP
   const sendOTP = async (identifier: string): Promise<boolean> => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
@@ -93,12 +112,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         toast.success(response.message || 'OTP sent successfully');
         
         // Show OTP to user if provided (Dev Mode support from backend)
-        const responseData = response as any;
-        if (responseData.otp) {
-            console.log('✅ Server OTP:', responseData.otp);
-            toast.info(`Dev OTP: ${responseData.otp}`, { duration: 10000 });
-        } else if (response.data && (response.data as any).otp) {
-             const otp = (response.data as any).otp;
+        // Show OTP to user if provided (Dev Mode support from backend)
+        const responseData = response as ApiResponse<{ otp?: string }>;
+        if (responseData.data?.otp) {
+             const otp = responseData.data.otp;
              console.log('✅ Server OTP:', otp);
              toast.info(`Dev OTP: ${otp}`, { duration: 10000 });
         }
@@ -108,7 +125,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         toast.error(response.error || 'Failed to send OTP');
         return false;
       }
-    } catch (error) {
+    } catch {
       toast.error('Connection failed. Is the server running?');
       return false;
     } finally {
@@ -123,10 +140,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const response = await authService.verifyOTP(verification);
       
-      const data = response as any;
+      const data = response as ApiResponse<LoginResponse>;
       
       if (response.success) {
-        const userData = data.user || (data.data?.user);
+        const userData = data.data?.user;
         
         if (userData) {
             const sessionExpiry = new Date(Date.now() + SESSION_DURATION);
@@ -147,7 +164,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setAuthState(prev => ({ ...prev, isLoading: false }));
       return false;
 
-    } catch (error) {
+    } catch {
       toast.error('An error occurred. Please try again.');
       setAuthState(prev => ({ ...prev, isLoading: false }));
       return false;
@@ -160,10 +177,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     try {
         const response = await authService.loginWithPassword(identifier, password);
-        const data = response as any;
+        const data = response as ApiResponse<LoginResponse>;
 
         if (response.success) {
-             const userData = data.user || (data.data?.user);
+             const userData = data.data?.user;
         
              if (userData) {
                  const sessionExpiry = new Date(Date.now() + SESSION_DURATION);
@@ -183,7 +200,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         toast.error(response.error || 'Login failed');
         setAuthState(prev => ({ ...prev, isLoading: false }));
         return false;
-    } catch (error) {
+    } catch {
         toast.error('An error occurred during login');
         setAuthState(prev => ({ ...prev, isLoading: false }));
         return false;
@@ -202,7 +219,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               toast.error(response.error || 'Verification failed');
               return false;
           }
-      } catch (error) {
+      } catch {
           toast.error('Verification error');
           return false;
       } finally {
@@ -225,23 +242,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setAuthState(prev => ({ ...prev, isLoading: false }));
         return false;
       }
-    } catch (error) {
+    } catch {
       toast.error('An error occurred. Please try again.');
       setAuthState(prev => ({ ...prev, isLoading: false }));
       return false;
     }
   };
 
-  // Logout
-  const logout = useCallback(() => {
-    setAuthState({
-      currentUser: null,
-      isAuthenticated: false,
-      sessionExpiry: null,
-      isLoading: false
-    });
-    toast.info('Logged out successfully');
-  }, []);
+
 
   const value: AuthContextType = {
     ...authState,

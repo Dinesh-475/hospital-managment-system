@@ -2,11 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
+import session from 'express-session';
+import passport from 'passport';
 import { errorHandler } from './middleware/errorMiddleware';
 import routes from './routes';
 import { configureSecurity } from './config/security';
-import passport from 'passport';
-import cookieSession from 'cookie-session';
 import './utils/passport';
 
 const app = express();
@@ -73,10 +73,16 @@ app.use((req, res, next) => {
 });
 
 // Auth Middleware (Must be before routes)
-app.use(cookieSession({
-  name: 'session',
-  keys: [process.env.COOKIE_KEY || 'secret_key_1', process.env.COOKIE_KEY_2 || 'secret_key_2'],
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'docvista_secret_key_change_in_production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  }
 }));
 
 app.use(passport.initialize());
@@ -93,8 +99,6 @@ app.get('/health', (req, res) => {
     uptime: process.uptime()
   });
 });
-
-
 
 // Error Handling
 app.use(errorHandler);

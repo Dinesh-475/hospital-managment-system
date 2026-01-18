@@ -12,7 +12,7 @@ interface RoleSpecificInfoProps {
     doctorData?: Partial<DoctorData>;
     staffData?: Partial<StaffData>;
   };
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: string | number | boolean) => void;
   errors: Record<string, string>;
 }
 

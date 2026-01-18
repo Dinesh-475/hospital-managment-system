@@ -12,7 +12,7 @@ interface BasicInfoProps {
     phone: string;
     role: UserRole | null;
   };
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: string | number | boolean | UserRole | null) => void;
   errors: Record<string, string>;
 }
 

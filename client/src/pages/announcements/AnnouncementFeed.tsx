@@ -15,7 +15,7 @@ const CATEGORIES: { value: AnnouncementCategory | 'all'; label: string; color: s
 
 export const AnnouncementFeed: React.FC = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [filteredAnnouncements, setFilteredAnnouncements] = useState<Announcement[]>([]);
+  // filteredAnnouncements is now a derived state via useMemo
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<AnnouncementCategory | 'all'>('all');
   const [sortBy, setSortBy] = useState<'recent' | 'popular'>('recent');
@@ -29,10 +29,16 @@ export const AnnouncementFeed: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    void loadAnnouncements();
+    let ignore = false;
+    const fetchAnnouncements = async () => {
+      if (ignore) return;
+      await loadAnnouncements();
+    };
+    fetchAnnouncements();
+    return () => { ignore = true; };
   }, [loadAnnouncements]);
 
-  useEffect(() => {
+  const filteredAnnouncements = React.useMemo(() => {
     let filtered = [...announcements];
 
     // Filter by category
@@ -60,7 +66,7 @@ export const AnnouncementFeed: React.FC = () => {
     // Pinned first
     filtered.sort((a, b) => (a.isPinned === b.isPinned ? 0 : a.isPinned ? -1 : 1));
 
-    setFilteredAnnouncements(filtered);
+    return filtered;
   }, [announcements, selectedCategory, sortBy, searchQuery]);
 
   const handleReaction = async (announcementId: string, emoji: string, hasReacted: boolean) => {

@@ -104,5 +104,15 @@ export const authService = {
           // Silent fail usually
           return { success: false, error: 'Not authenticated' };
       }
+  },
+  
+  // Logout
+  logout: async (): Promise<ApiResponse<{ message: string }>> => {
+      try {
+          const response = await api.get('/auth/logout');
+          return response.data;
+      } catch (error: any) {
+          return { success: false, error: 'Logout failed' };
+      }
   }
 };
